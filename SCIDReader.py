@@ -4,7 +4,7 @@ import numpy as np
 import struct
 import sys
 
-def SCIDReaderGen(scid_file):
+def SCIDReaderGen(scid):
     s_IntradayHeader = '=4sIIHHI36s'
     s_IntradayRecord = '=qffffIIII'
     header = scid.read(struct.calcsize(s_IntradayHeader))
