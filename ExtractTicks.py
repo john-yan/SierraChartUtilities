@@ -17,12 +17,15 @@ def main():
     INPUT = args.input if args.input != '-' else sys.stdin
     OUTPUT = args.output if args.output != '-' else sys.stdout
 
+    print('ExtractTicks Reading CSV data from ' + args.input, file=sys.stderr)
     df = pd.read_csv(INPUT)
     df = df[df.DateTime >= args.sDateTime]
     if args.eDateTime != 0:
         df = df[df.DateTime <= args.eDateTime]
 
+    print('ExtractTicks Saving to ' + args.output, file=sys.stderr)
     df.to_csv(OUTPUT, index=False)
+    print('ExtractTicks Done.', file=sys.stderr)
 
 if __name__ == '__main__':
     main()

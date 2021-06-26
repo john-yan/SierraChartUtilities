@@ -49,11 +49,11 @@ def main():
     OUTPUT = args.output if args.output != '-' else sys.stdout
 
     with open(args.input, 'rb') as input_file:
-        print(args.input + ' open successful and converting...', file=sys.stderr)
+        print('SCIDReader Reading and converting ' + args.input, file=sys.stderr)
         df = ConvertSCIDToDF(input_file)
-        print('Convertion done. Saving to file ' + args.output, file=sys.stderr)
+        print('SCIDReader Convertion done. Saving to file ' + args.output, file=sys.stderr)
         df.to_csv(OUTPUT, index=False)
-        print('Saving done.', file=sys.stderr)
+        print('SCIDReader Saving done.', file=sys.stderr)
 
 if __name__ == '__main__':
     main()

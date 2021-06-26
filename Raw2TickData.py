@@ -41,8 +41,12 @@ if __name__ == '__main__':
     INPUT = args.input if args.input != '-' else sys.stdin
     OUTPUT = args.output if args.output != '-' else sys.stdout
 
+    print('Raw2TickData Reading CSV data from ' + args.input, file=sys.stderr)
     raw_df = pd.read_csv(INPUT)
+    print('Raw2TickData Converting to tick data', file=sys.stderr)
     df = ConvertRaw2Tick(raw_df)
 
+    print('Raw2TickData Saving to ' + args.output, file=sys.stderr)
     df.to_csv(OUTPUT, index=False)
+    print('Raw2TickData Done.', file=sys.stderr)
 
