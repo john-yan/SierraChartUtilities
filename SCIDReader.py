@@ -3,41 +3,7 @@ import pandas as pd
 import numpy as np
 import struct
 import sys
-
-def SCIDReaderGen(scid):
-    s_IntradayHeader = '=4sIIHHI36s'
-    s_IntradayRecord = '=qffffIIII'
-    header = scid.read(struct.calcsize(s_IntradayHeader))
-    yield header
-
-    while True:
-        buf = scid.read(struct.calcsize(s_IntradayRecord))
-        if not buf or len(buf) != struct.calcsize(s_IntradayRecord):
-            break
-        yield struct.unpack(s_IntradayRecord, buf)
-
-def ConvertSCIDToDF(scid_file):
-    reader = SCIDReaderGen(scid_file)
-
-    # skip the header
-    next(reader)
-
-    df = pd.DataFrame(reader, columns=[
-        'StartDateTime',
-        'OpenPrice',
-        'HighPrice',
-        'LowPrice',
-        'LastPrice',
-        'NumTrades',
-        'Volume',
-        'BidVolume',
-        'AskVolume'
-    ])
-
-    # convert to unix timestamp
-    df.StartDateTime = (df.StartDateTime / 1000000 - (25569 * 86400)).astype(int)
-
-    return df
+from DataConvertionUtilities import ConvertSCIDToRaw
 
 def main():
     parser = argparse.ArgumentParser()
@@ -50,7 +16,7 @@ def main():
 
     with open(args.input, 'rb') as input_file:
         print('SCIDReader Reading and converting ' + args.input, file=sys.stderr)
-        df = ConvertSCIDToDF(input_file)
+        df = ConvertSCIDToRaw(input_file)
         print('SCIDReader Convertion done. Saving to file ' + args.output, file=sys.stderr)
         df.to_csv(OUTPUT, index=False)
         print('SCIDReader Saving done.', file=sys.stderr)
