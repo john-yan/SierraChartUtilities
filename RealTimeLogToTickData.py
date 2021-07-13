@@ -20,7 +20,11 @@ def process(input_file, output_file, follow_mode):
         if read_cache[-1] != '\n':
             continue
 
-        obj = json.loads(read_cache.rstrip())
+        try:
+            obj = json.loads(read_cache.rstrip())
+        except json.decoder.JSONDecodeError as err:
+            print('unable to decode content: ' + read_cache)
+            print(err)
         read_cache = ''
 
         if 'Type' not in obj:

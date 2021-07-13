@@ -68,6 +68,7 @@ def ProcessFiles(infiles, outfile, follow_mode):
     for trade in trades:
         outfile.write(trade_format % trade)
 
+    assert(len(trades) > 0)
     last_second = trades[-1][0]
     del trades
 

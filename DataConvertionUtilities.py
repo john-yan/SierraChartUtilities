@@ -2,6 +2,7 @@
 import pandas as pd
 import numpy as np
 import struct
+import random
 
 def SCIDReaderGen(scid):
     s_IntradayHeader = '=4sIIHHI36s'
@@ -63,26 +64,24 @@ def ConvertRaw2Tick(raw_df):
 
 def ConvertTick2OHLC(ticks, period=30*60):
     ticks = pd.DataFrame(ticks.reset_index(drop=True))
-    ticks['period'] = (ticks.DateTime / period).astype(np.int32)
-    ticks['last_period'] = np.roll(ticks.period, 1)
-    ticks.at[0, 'last_period'] = 0
-    ticks['last_period'] = ticks.last_period.astype(np.int32)
-    start_index = np.array(ticks[ticks.period != ticks.last_period].index)
+    periods = (ticks.DateTime / period).astype(np.int32)
+    diff = periods.diff()
+    diff[0] = 1
+    start_index = np.array(ticks[diff != 0].index)
     end_index = np.roll(start_index, -1)
     end_index[-1] = len(ticks)
     new_index = np.arange(0, len(start_index), 1)
     new_index = np.repeat(new_index, end_index - start_index)
     ticks['new_index'] = new_index
-    result = pd.DataFrame(np.zeros((len(start_index), 7)), columns=['StartDateTime', 'EndDateTime', 'Open', 'High', 'Low', 'Close', 'Volume'])
     group = ticks.groupby(['new_index'])
-
-    result['StartDateTime'] = group.DateTime.first()
-    result['EndDateTime'] = group.DateTime.last()
-    result['Open'] = group.Price.first()
-    result['High'] = group.Price.max()
-    result['Low'] = group.Price.min()
-    result['Close'] = group.Price.last()
-    result['Volume'] = group.Volume.sum()
+    result = pd.DataFrame({
+        'StartDateTime': group.DateTime.first(),
+        'EndDateTime': group.DateTime.last(),
+        'Open': group.Price.first(),
+        'High': group.Price.max(),
+        'Low': group.Price.min(),
+        'Close': group.Price.last(),
+        'Volume': group.Volume.sum()
+    })
 
     return result
-
