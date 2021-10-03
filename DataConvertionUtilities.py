@@ -16,7 +16,7 @@ def SCIDReaderGen(scid):
             break
         yield struct.unpack(s_IntradayRecord, buf)
 
-def ConvertSCIDToRaw(scid_file):
+def ConvertSCIDToDF(scid_file, datetime_is_seconds=True):
     reader = SCIDReaderGen(scid_file)
 
     # skip the header
@@ -35,7 +35,45 @@ def ConvertSCIDToRaw(scid_file):
     ])
 
     # convert to unix timestamp
-    raw.StartDateTime = (raw.StartDateTime / 1000000 - (25569 * 86400)).astype(int)
+    raw.StartDateTime = raw.StartDateTime - (25569 * 86400 * 1000000)
+
+    if datetime_is_seconds:
+        raw.StartDateTime = (raw.StartDateTime / 1000000).astype('int')
+
+    return raw
+
+def SCDepthReaderGen(depth):
+    s_MarketDepthFileHeader = '=4I48s'
+    s_MarketDepthFileRecord = '=qbbhfII'
+    header = depth.read(struct.calcsize(s_MarketDepthFileHeader))
+
+    yield struct.unpack(s_MarketDepthFileHeader, header)
+
+    while True:
+        record = depth.read(struct.calcsize(s_MarketDepthFileRecord))
+        if not record or len(record) != struct.calcsize(s_MarketDepthFileRecord):
+            break
+        yield struct.unpack(s_MarketDepthFileRecord, record)
+
+def ConvertSCDepthToDF(depth_file):
+    reader = SCDepthReaderGen(depth_file)
+
+    # skip the header
+    next(reader)
+
+    raw = pd.DataFrame(reader, columns=[
+        'DateTime',
+        'Command',
+        'Flags',
+        'NumOrders',
+        'Price',
+        'Quantity',
+        'Reserved'
+    ])
+
+    # convert to unix timestamp
+    raw.DateTime = raw.DateTime - (25569 * 86400) * 1000_000
+    raw.drop(columns=['Reserved'], inplace=True)
 
     return raw
 
